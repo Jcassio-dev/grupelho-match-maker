@@ -53,6 +53,17 @@ mvn -q -DskipTests package
 java -jar target/grupelho.jar
 ```
 
+### Testando a camada riot/ em modo stub
+
+Com `RIOT_API_KEY` e `USE_STUB=true` preenchidos no `.env`, rode:
+
+```bash
+mvn -q -DskipTests package
+java -jar target/grupelho.jar stub-demo
+```
+
+Isso cria um provider de torneio, um torneio e gera 1 código de torneio 3v3 usando o Tournament-Stub-V5, e imprime o resultado no console. Sem uma `RIOT_API_KEY` válida, o comando falha com um erro claro de configuração ausente.
+
 ## Decisões de implementação
 
 - O ranking (`rating/`) usa um sistema de Elo por time, plugável atrás da interface `RatingSystem`, considerando só vitória/derrota. KDA e outras estatísticas ficam separados, só para exibição.
@@ -64,7 +75,7 @@ java -jar target/grupelho.jar
 ## Status das fases
 
 - [x] Fase 1: scaffold Maven, dependências, configuração e README inicial.
-- [ ] Fase 2: camada `riot/` e runner CLI de teste (modo stub).
+- [x] Fase 2: camada `riot/` e runner CLI de teste (modo stub).
 - [ ] Fase 3: `store/` SQLite e `/registrar` ponta a ponta.
 - [ ] Fase 4: bot Discord com `/criar`, `/resultado` e `/rank`, com rating Elo por time.
 - [ ] Fase 5: servidor de callback Javalin e integração com Match-V5.
