@@ -73,13 +73,16 @@ Isso cria um provider de torneio, um torneio e gera 1 código de torneio 3v3 usa
 - Enquanto a production key da Riot não existe, o callback web (`web/`) fica no código mas inativo na prática: o Tournament-Stub-V5 não dispara callbacks, então o fluxo depende do `/resultado` manual com confirmação do time perdedor.
 - A camada `store/` usa uma interface `Repository` com implementação SQLite, para permitir trocar por Postgres no futuro sem mexer no resto do bot.
 - A troca entre o Tournament-Stub-V5 (teste) e o Tournament-V5 real (produção) é feita só pela flag `USE_STUB`, que troca a base do caminho da API e nada mais no código.
+- `/criar` aceita `time_a` e `time_b` como opções opcionais (menções dos jogadores de cada time). Quando preenchidos, o código de torneio é restrito aos PUUIDs registrados desses jogadores (`allowedParticipants`) e o `/resultado` dessa partida atualiza os standings Elo. Sem eles, a sala é criada sem restrição de participantes e o resultado é só registrado, sem afetar o ranking, pois não há como saber quem estava em cada time.
+- O rating inicial de cada jogador em cada modo é 1000. O Elo por time calcula a expectativa de vitória usando a média do rating dos dois times e aplica a mesma variação a todos os jogadores do time.
+- A cada inicialização do bot é criado um provider e um torneio novos na Riot API (simplificação do MVP; o ideal seria reaproveitar um torneio já existente entre reinícios).
 
 ## Status das fases
 
 - [x] Fase 1: scaffold Maven, dependências, configuração e README inicial.
 - [x] Fase 2: camada `riot/` e runner CLI de teste (modo stub).
 - [x] Fase 3: `store/` SQLite e `/registrar` ponta a ponta.
-- [ ] Fase 4: bot Discord com `/criar`, `/resultado` e `/rank`, com rating Elo por time.
+- [x] Fase 4: bot Discord com `/criar`, `/resultado` e `/rank`, com rating Elo por time.
 - [ ] Fase 5: servidor de callback Javalin e integração com Match-V5.
 
 ## Legal notice

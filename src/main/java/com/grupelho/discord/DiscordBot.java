@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 
@@ -15,12 +16,14 @@ public class DiscordBot extends ListenerAdapter {
 
     private final List<DiscordCommand> commands;
     private final Map<String, DiscordCommand> commandsByName;
+    private final List<ButtonHandler> buttonHandlers;
     private JDA jda;
 
-    public DiscordBot(List<DiscordCommand> commands) {
+    public DiscordBot(List<DiscordCommand> commands, List<ButtonHandler> buttonHandlers) {
         this.commands = commands;
         this.commandsByName = commands.stream()
                 .collect(Collectors.toMap(c -> c.definition().getName(), c -> c));
+        this.buttonHandlers = buttonHandlers;
     }
 
     public void start(String token, String guildId) {
@@ -52,6 +55,16 @@ public class DiscordBot extends ListenerAdapter {
         DiscordCommand command = commandsByName.get(event.getName());
         if (command != null) {
             command.handle(event);
+        }
+    }
+
+    @Override
+    public void onButtonInteraction(ButtonInteractionEvent event) {
+        for (ButtonHandler handler : buttonHandlers) {
+            if (handler.supports(event.getComponentId())) {
+                handler.handle(event);
+                return;
+            }
         }
     }
 }
