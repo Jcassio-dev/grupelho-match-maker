@@ -24,6 +24,8 @@ public interface Repository {
 
     void updateMatchStatus(String internalId, MatchStatus status);
 
+    void setTournamentCode(String internalId, String tournamentCode);
+
     void saveResult(Result result);
 
     Optional<Result> findResultByMatchId(String internalId);

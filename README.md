@@ -76,6 +76,9 @@ Isso cria um provider de torneio, um torneio e gera 1 código de torneio 3v3 usa
 - `/criar` aceita `time_a` e `time_b` como opções opcionais (menções dos jogadores de cada time). Quando preenchidos, o código de torneio é restrito aos PUUIDs registrados desses jogadores (`allowedParticipants`) e o `/resultado` dessa partida atualiza os standings Elo. Sem eles, a sala é criada sem restrição de participantes e o resultado é só registrado, sem afetar o ranking, pois não há como saber quem estava em cada time.
 - O rating inicial de cada jogador em cada modo é 1000. O Elo por time calcula a expectativa de vitória usando a média do rating dos dois times e aplica a mesma variação a todos os jogadores do time.
 - A cada inicialização do bot é criado um provider e um torneio novos na Riot API (simplificação do MVP; o ideal seria reaproveitar um torneio já existente entre reinícios).
+- O `internalMatchId` da partida é guardado no campo `metadata` do código de torneio na hora da criação, para correlacionar a partida quando o callback da Riot chegar.
+- O servidor de callback (`web/CallbackServer`, Javalin) sobe junto com o bot e escuta `POST /riot/callback`, mas só recebe tráfego real da Riot quando existe production key: o Tournament-Stub-V5 nunca dispara esse callback, então no modo stub ele fica no ar sem receber nada. Quando o callback chega, ele busca a partida via Match-V5, identifica o time vencedor comparando os PUUIDs dos jogadores registrados com os participantes da partida, e atualiza os standings automaticamente, sem precisar do `/resultado` manual.
+- A lógica de aplicar a atualização de rating é compartilhada (`rating/RatingApplier`) entre o fallback manual (`/resultado`) e o callback automático, para não duplicar código.
 
 ## Status das fases
 
@@ -83,7 +86,7 @@ Isso cria um provider de torneio, um torneio e gera 1 código de torneio 3v3 usa
 - [x] Fase 2: camada `riot/` e runner CLI de teste (modo stub).
 - [x] Fase 3: `store/` SQLite e `/registrar` ponta a ponta.
 - [x] Fase 4: bot Discord com `/criar`, `/resultado` e `/rank`, com rating Elo por time.
-- [ ] Fase 5: servidor de callback Javalin e integração com Match-V5.
+- [x] Fase 5: servidor de callback Javalin e integração com Match-V5.
 
 ## Legal notice
 

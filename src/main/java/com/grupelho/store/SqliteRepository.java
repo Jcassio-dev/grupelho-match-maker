@@ -196,6 +196,18 @@ public class SqliteRepository implements Repository {
         }
     }
 
+    @Override
+    public void setTournamentCode(String internalId, String tournamentCode) {
+        String sql = "UPDATE matches SET tournament_code = ? WHERE id = ?";
+        try (Connection conn = connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, tournamentCode);
+            stmt.setLong(2, Long.parseLong(internalId));
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Falha ao salvar codigo de torneio da partida " + internalId, e);
+        }
+    }
+
     private Match mapMatch(ResultSet rs) throws Exception {
         return new Match(
                 String.valueOf(rs.getLong("id")),

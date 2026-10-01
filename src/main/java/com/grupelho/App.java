@@ -10,14 +10,17 @@ import com.grupelho.discord.commands.RankCommand;
 import com.grupelho.discord.commands.RegistrarCommand;
 import com.grupelho.discord.commands.ResultadoCommand;
 import com.grupelho.rating.EloPorTime;
+import com.grupelho.rating.RatingApplier;
 import com.grupelho.rating.RatingSystem;
 import com.grupelho.riot.AccountApi;
+import com.grupelho.riot.MatchApi;
 import com.grupelho.riot.RiotHosts;
 import com.grupelho.riot.RiotHttpClient;
 import com.grupelho.riot.SummonerApi;
 import com.grupelho.riot.TournamentApi;
 import com.grupelho.store.Repository;
 import com.grupelho.store.SqliteRepository;
+import com.grupelho.web.CallbackServer;
 
 import java.util.List;
 
@@ -35,14 +38,16 @@ public class App {
         AccountApi accountApi = new AccountApi(riotHttp, RiotHosts.regional(config.riotRegion()));
         SummonerApi summonerApi = new SummonerApi(riotHttp, RiotHosts.platform(config.riotRegion()));
         TournamentApi tournamentApi = new TournamentApi(riotHttp, RiotHosts.regional(config.riotRegion()), config.useStub());
+        MatchApi matchApi = new MatchApi(riotHttp, RiotHosts.regional(config.riotRegion()));
         Repository repository = new SqliteRepository("grupelho.db");
         RatingSystem ratingSystem = new EloPorTime();
+        RatingApplier ratingApplier = new RatingApplier(repository, ratingSystem);
 
         long providerId = tournamentApi.createProvider(config.riotRegion(), config.callbackUrl());
         long tournamentId = tournamentApi.createTournament(providerId, "grupelho");
         System.out.println("Torneio Riot pronto. providerId=" + providerId + " tournamentId=" + tournamentId);
 
-        ResultadoCommand resultadoCommand = new ResultadoCommand(repository, ratingSystem);
+        ResultadoCommand resultadoCommand = new ResultadoCommand(repository, ratingApplier);
 
         List<DiscordCommand> commands = List.of(
                 new RegistrarCommand(accountApi, summonerApi, repository),
@@ -54,7 +59,10 @@ public class App {
 
         DiscordBot bot = new DiscordBot(commands, buttonHandlers);
         bot.start(config.discordToken(), config.discordGuildId());
-
         System.out.println("grupelho conectado ao Discord.");
+
+        new CallbackServer(repository, matchApi, ratingApplier).start(config.callbackPort());
+        System.out.println("Callback web escutando na porta " + config.callbackPort()
+                + " (so recebe trafego real da Riot com production key, nao no modo stub).");
     }
 }

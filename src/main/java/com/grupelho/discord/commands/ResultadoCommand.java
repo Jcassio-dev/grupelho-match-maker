@@ -2,13 +2,11 @@ package com.grupelho.discord.commands;
 
 import com.grupelho.discord.ButtonHandler;
 import com.grupelho.discord.DiscordCommand;
-import com.grupelho.domain.GameMode;
 import com.grupelho.domain.Match;
 import com.grupelho.domain.MatchStatus;
 import com.grupelho.domain.Result;
 import com.grupelho.domain.Side;
-import com.grupelho.rating.RatingSystem;
-import com.grupelho.rating.RatingUpdate;
+import com.grupelho.rating.RatingApplier;
 import com.grupelho.store.Repository;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -33,11 +31,11 @@ public class ResultadoCommand implements DiscordCommand, ButtonHandler {
     private static final String BUTTON_PREFIX = "grupelho-confirmar:";
 
     private final Repository repository;
-    private final RatingSystem ratingSystem;
+    private final RatingApplier ratingApplier;
 
-    public ResultadoCommand(Repository repository, RatingSystem ratingSystem) {
+    public ResultadoCommand(Repository repository, RatingApplier ratingApplier) {
         this.repository = repository;
-        this.ratingSystem = ratingSystem;
+        this.ratingApplier = ratingApplier;
     }
 
     @Override
@@ -106,40 +104,8 @@ public class ResultadoCommand implements DiscordCommand, ButtonHandler {
 
         repository.confirmResult(matchId, event.getUser().getId());
         repository.updateMatchStatus(matchId, MatchStatus.CONFIRMED);
-        applyRating(match, result.winner());
+        ratingApplier.apply(match.mode(), match.teamA(), match.teamB(), result.winner() == Side.A);
 
         event.reply("Resultado confirmado! Standings do modo " + match.mode().label() + " atualizados.").queue();
-    }
-
-    private void applyRating(Match match, Side winner) {
-        GameMode mode = match.mode();
-        boolean teamAWon = winner == Side.A;
-
-        double ratingA = averageRating(mode, match.teamA());
-        double ratingB = averageRating(mode, match.teamB());
-
-        RatingUpdate update = ratingSystem.update(ratingA, ratingB, teamAWon);
-        double deltaA = update.newTeamARating() - ratingA;
-        double deltaB = update.newTeamBRating() - ratingB;
-
-        applyDelta(mode, match.teamA(), deltaA);
-        applyDelta(mode, match.teamB(), deltaB);
-    }
-
-    private double averageRating(GameMode mode, List<String> team) {
-        if (team.isEmpty()) {
-            return ratingSystem.defaultRating();
-        }
-        return team.stream()
-                .mapToDouble(id -> repository.getRating(mode, id, ratingSystem.defaultRating()))
-                .average()
-                .orElse(ratingSystem.defaultRating());
-    }
-
-    private void applyDelta(GameMode mode, List<String> team, double delta) {
-        for (String discordUserId : team) {
-            double current = repository.getRating(mode, discordUserId, ratingSystem.defaultRating());
-            repository.setRating(mode, discordUserId, current + delta);
-        }
     }
 }

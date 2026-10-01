@@ -60,11 +60,13 @@ public class CriarCommand implements DiscordCommand {
         event.deferReply().queue();
 
         try {
-            TournamentCodeParams params = buildParams(mode, allowedParticipants);
+            String internalId = repository.createMatch(mode, "PENDENTE", teamA, teamB);
+            String metadata = "{\"internalMatchId\":\"" + internalId + "\"}";
+
+            TournamentCodeParams params = buildParams(mode, allowedParticipants, metadata);
             List<String> codes = tournamentApi.createCodes(tournamentId, 1, params);
             String code = codes.get(0);
-
-            String internalId = repository.createMatch(mode, code, teamA, teamB);
+            repository.setTournamentCode(internalId, code);
 
             event.getHook().sendMessage(
                     "Sala criada! Modo: " + mode.label() + "\n"
@@ -77,8 +79,7 @@ public class CriarCommand implements DiscordCommand {
         }
     }
 
-    private TournamentCodeParams buildParams(GameMode mode, List<String> allowedParticipants) {
-        String metadata = "{}";
+    private TournamentCodeParams buildParams(GameMode mode, List<String> allowedParticipants, String metadata) {
         return switch (mode) {
             case THREE_V_THREE -> TournamentPresets.threeVThree(metadata, allowedParticipants);
             case FOUR_V_FOUR -> TournamentPresets.fourVFour(metadata, allowedParticipants);
