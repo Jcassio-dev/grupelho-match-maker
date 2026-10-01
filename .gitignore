@@ -1,0 +1,29 @@
+# Segredos
+.env
+*.env
+!.env.example
+
+# Maven
+target/
+dependency-reduced-pom.xml
+
+# Banco de dados
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# SO
+.DS_Store
+Thumbs.db
