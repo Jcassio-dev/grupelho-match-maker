@@ -53,6 +53,8 @@ mvn -q -DskipTests package
 java -jar target/grupelho.jar
 ```
 
+Isso sobe o bot do Discord, registra os slash commands no servidor indicado por `DISCORD_GUILD_ID` e já deixa o `/registrar` disponível (resolve o Riot ID via Account-V1, confirma a conta via Summoner-V4 e salva o jogador no `grupelho.db`, um arquivo SQLite local criado automaticamente na primeira execução).
+
 ### Testando a camada riot/ em modo stub
 
 Com `RIOT_API_KEY` e `USE_STUB=true` preenchidos no `.env`, rode:
@@ -76,7 +78,7 @@ Isso cria um provider de torneio, um torneio e gera 1 código de torneio 3v3 usa
 
 - [x] Fase 1: scaffold Maven, dependências, configuração e README inicial.
 - [x] Fase 2: camada `riot/` e runner CLI de teste (modo stub).
-- [ ] Fase 3: `store/` SQLite e `/registrar` ponta a ponta.
+- [x] Fase 3: `store/` SQLite e `/registrar` ponta a ponta.
 - [ ] Fase 4: bot Discord com `/criar`, `/resultado` e `/rank`, com rating Elo por time.
 - [ ] Fase 5: servidor de callback Javalin e integração com Match-V5.
 

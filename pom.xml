@@ -5,11 +5,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.grupelho</groupId>
-  <artifactId>grupelho</artifactId>
+  <artifactId>grupelho-match-maker</artifactId>
   <version>1.0.0</version>
   <packaging>jar</packaging>
 
-  <name>grupelho</name>
+  <name>grupelho-match-maker</name>
   <description>Bot de Discord privado para liga de torneios interna de LoL in-house</description>
 
   <properties>
